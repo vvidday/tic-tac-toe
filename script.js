@@ -5,9 +5,6 @@ const Player = (name, symbol) =>{
     return {getName, getSymbol};
 }
 
-const playerOne = Player("Player One", "O");
-const playerTwo = Player("Player Two", "X");
-
 // Gameboard Module
 const Gameboard = (()=>{
     let board = [0,0,0,0,0,0,0,0,0];
@@ -26,9 +23,7 @@ const Gameboard = (()=>{
         if(zeros > 6) return 0;
 
         //rows
-        console.log(board[0]);
-        console.log(board[1]);
-        console.log(board[2]);
+
         if((board[0] === board[1] && board[0] === board[2]) && board[0] != 0) return board[0];
         if((board[3] === board[4] && board[3] === board[5]) && board[3] != 0) return board[3];
         if((board[6] === board[7] && board[6] === board[8]) && board[6] != 0) return board[6];
@@ -64,18 +59,62 @@ const Gameboard = (()=>{
 // Display Controller Module
 const DisplayController = (()=>{
     const squares = document.querySelectorAll(".square");
-    let currentState = Gameboard.getState();
+    const stateText = document.getElementById("state-text");
+    const inputContainer = document.getElementById("input-container");
+    const resetButton = document.getElementById("reset-button");
+    
 
     const updateDisplay = () => {
+        let currentState = Gameboard.getState();
         for(let i = 0; i < 9; i++){
             if (currentState[i] != 0){
                 squares[i].classList.remove("invisible");
                 squares[i].textContent = currentState[i];
             }
+            if (currentState[i] === 0 && squares[i].textContent != 0){
+                squares[i].classList.add("invisible");
+                squares[i].textContent = currentState[i];
+            }
         }
     }
+
+    const updateStateText = (msg) =>{
+        stateText.textContent = msg;
+    }
+
+    const handleStartGame = (p) =>{
+        inputContainer.classList.add("invisible");
+        updateStateText(`It's ${p.getName()}'s turn!`);
+    }
+
+    const handleEndGame = (winner) =>{
+        if (winner === "draw") updateStateText("Draw! Game Over!");
+        else updateStateText(winner.getName() + " won! Congrats!");
+        resetButton.classList.remove("invisible");
+        resetButton.addEventListener("click", resetListener);
+
+    }
+    const handleResetGame = () =>{
+        updateStateText("Enter the names of Player 1 and 2 to start!");
+        resetButton.classList.add("invisible");
+        resetButton.removeEventListener("click", resetListener);
+        inputContainer.classList.remove("invisible");
+        updateDisplay();
+    }
+
+    function resetListener(){
+        GameLoop.wipeData();
+        Gameboard.clearBoard();
+        InputHandler.wipeData();
+        handleResetGame();
+    }
+
     return{
+        updateStateText,
         updateDisplay,
+        handleStartGame,
+        handleEndGame,
+        handleResetGame,
     };
 
 })();
@@ -101,17 +140,17 @@ const  GameLoop = (()=>{
             if(Gameboard.isGameOver() != 0){
                 let result = Gameboard.isGameOver();
                 if(result === -1){
-                    alert("Draw! Game Over!");
+                    DisplayController.handleEndGame("draw");
                 }
                 else{
-                    alert(currentPlayer.getName() + " won! Congrats!");
+                    DisplayController.handleEndGame(currentPlayer);
                 }
             }
             else{
                 if(currentPlayer === p1) currentPlayer = p2;
                 else currentPlayer = p1;
                 playRound();
-                console.log("next round!")
+                DisplayController.updateStateText(`It's ${currentPlayer.getName()}'s turn!`);
             }
         }
         squares.forEach((s) => s.addEventListener("click", listener));
@@ -138,5 +177,42 @@ const  GameLoop = (()=>{
 
 })();
 
-GameLoop.init(playerOne, playerTwo);
-GameLoop.startGame();
+// Input Module
+const InputHandler = (() =>{
+    const inputOne = document.getElementById("player-one");
+    const inputTwo = document.getElementById("player-two");
+    const startGameButton = document.getElementById("start-button");
+
+    function listener(){
+        if(!inputOne.value || !inputTwo.value){
+            alert("Please fill in the names of both Player 1 and Player 2.");
+        }
+        else{
+            const playerOne = Player(inputOne.value, "O");
+            const playerTwo = Player(inputTwo.value, "X");
+            GameLoop.init(playerOne, playerTwo);
+            GameLoop.startGame();
+            DisplayController.handleStartGame(playerOne);
+        }
+    }
+
+    const init = ()=>{
+        startGameButton.addEventListener("click", listener);
+    }
+
+    const wipeData = ()=>{
+        inputOne.value = "";
+        inputTwo.value = "";
+    }
+
+    return{
+        init,
+        wipeData,
+    };
+
+})();
+
+InputHandler.init();
+
+
+

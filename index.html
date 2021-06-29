@@ -8,7 +8,15 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    
+    <header>Tic Tac Toe!</header>
+
+    <div id="state-container">
+        <div id="state-text">
+            Enter the names of Player 1 and 2 to start!
+        </div>
+        <button id="reset-button" class="invisible">Reset Game</button>
+    </div>
+
     <section id="board-container">
         <div id="first-row" class="grid">
             <div id="1" class="square invisible">1</div>
@@ -26,6 +34,24 @@
             <div id="9" class="square invisible">9</div>
         </div>
 
+    </section>
+
+    <section id="input-container">
+        <div class="inputs">
+            <div id="player-one-input" class="input-div">
+                <span>Player One</span>
+                <label for="player-one">Enter your name:</label>
+                <input type="text" name="player-one" id="player-one">
+            </div>
+            <div id="player-two-input" class="input-div">
+                <span>Player Two</span>
+                <label for="player-one">Enter your name:</label>
+                <input type="text" name="player-two" id="player-two">
+            </div>
+        </div>
+        <div class="start-button-div">
+            <button id="start-button">Start Game</button>
+        </div>
     </section>
 
     <script src="script.js"></script>
